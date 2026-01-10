@@ -1,0 +1,13 @@
+{
+  "name": "secretaria-ia",
+  "version": "1.0.0",
+  "description": "Secretária virtual no WhatsApp usando Webhook + IA",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
