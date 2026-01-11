@@ -24,11 +24,11 @@ app.get("/webhook", (req, res) => {
   }
 });
 
-// Webhook que recebe mensagens (COM LIMITE DE CONVERSAS)
+// Webhook que recebe mensagens (TESTE DE LIMITE)
 app.post("/webhook", async (req, res) => {
   try {
-    // 👉 ajuste este campo se o ID vier com outro nome no WhatsApp
-    const companyId = req.body.company_id;
+    // 🔒 company_id FIXO para teste de limite
+    const companyId = "3e12f0b7-a1f4-4742-bf08-a454029c0969";
 
     // registra e valida limite de conversas
     await registerConversation(companyId);
@@ -51,3 +51,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Servidor rodando na porta", PORT);
 });
+
