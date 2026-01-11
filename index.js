@@ -1,4 +1,5 @@
 import express from "express";
+import { registerConversation } from "./conversationLimiter.js";
 
 const app = express();
 app.use(express.json());
@@ -23,12 +24,27 @@ app.get("/webhook", (req, res) => {
   }
 });
 
-// Webhook que recebe mensagens
-app.post("/webhook", (req, res) => {
-  console.log("Mensagem recebida:");
-  console.log(JSON.stringify(req.body, null, 2));
+// Webhook que recebe mensagens (COM LIMITE DE CONVERSAS)
+app.post("/webhook", async (req, res) => {
+  try {
+    // 👉 ajuste este campo se o ID vier com outro nome no WhatsApp
+    const companyId = req.body.company_id;
 
-  res.sendStatus(200);
+    // registra e valida limite de conversas
+    await registerConversation(companyId);
+
+    console.log("Mensagem recebida:");
+    console.log(JSON.stringify(req.body, null, 2));
+
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("Limite de conversas atingido:", err.message);
+
+    res.status(402).json({
+      error: "Limite de conversas do plano atingido",
+      details: err.message,
+    });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
