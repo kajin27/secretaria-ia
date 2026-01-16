@@ -12,7 +12,7 @@ app.get("/", (req, res) => {
 // ✅ Webhook de verificação do WhatsApp (Meta)
 // ======================================================
 app.get("/webhook", (req, res) => {
-  const verifyToken = process.env.VERIFY_TOKEN; // <- vem do Railway Variables
+  const verifyToken = process.env.VERIFY_TOKEN;
 
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
@@ -35,27 +35,36 @@ app.get("/webhook", (req, res) => {
 });
 
 // ======================================================
-// ✅ Webhook que recebe mensagens (COM LIMITE)
+// ✅ Webhook que recebe mensagens (SEM TRAVAR O META)
 // ======================================================
 app.post("/webhook", async (req, res) => {
   try {
-    // 🔒 company_id FIXO para teste de limite
-    const companyId = "3e12f0b7-a1f4-4742-bf08-a454029c0969";
-
-    // registra e valida limite de conversas
-    await registerConversation(companyId);
-
-    console.log("📩 Mensagem recebida:");
+    console.log("📩 Evento recebido do WhatsApp:");
     console.log(JSON.stringify(req.body, null, 2));
 
-    return res.sendStatus(200);
-  } catch (err) {
-    console.error("🚫 Limite de conversas atingido:", err.message);
+    // ✅ Responde 200 rápido pro Meta (isso evita erro e re-tentativas)
+    res.sendStatus(200);
 
-    return res.status(402).json({
-      error: "Limite de conversas do plano atingido",
-      details: err.message,
-    });
+    // ======================================================
+    // 🔒 LIMITE DE CONVERSAS (OPCIONAL)
+    // ======================================================
+    // Se você ainda não criou empresa/tabela certinho no Supabase,
+    // deixe isso desligado por enquanto.
+
+    const ENABLE_LIMITER = false; // <-- troque pra true quando quiser ligar
+
+    if (ENABLE_LIMITER) {
+      const companyId = "3e12f0b7-a1f4-4742-bf08-a454029c0969";
+      await registerConversation(companyId);
+      console.log("✅ Limite OK: conversa registrada no Supabase");
+    }
+
+    // Aqui depois vamos colocar o código que responde a mensagem via WhatsApp API
+  } catch (err) {
+    console.error("❌ Erro no webhook:", err.message);
+
+    // Mesmo com erro, sempre responde 200 pro Meta não ficar re-enviando
+    return;
   }
 });
 
